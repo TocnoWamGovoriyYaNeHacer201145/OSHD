@@ -2,11 +2,11 @@ import sys
 import time
 import random
 import builtins
-import threading
 
 stack=[]
 fun_stack=[]
 if_stack=[]
+comment_stack = []
 safe_list = ['__builtins__', '__name__', 'main_edit', 'current_edit',
              'str', 'int', 'stack', 'fun_stack', 'if_stack', 'execute',
              'fun_list', 'check_for_var']
@@ -15,6 +15,7 @@ main_edit = False
 current_edit = None
 
 def True_or_False(arg1, arg2, arg3):
+    print(stack)
     arg1 = check_for_var(arg1); 
     arg2 = check_for_var(arg2)
     try: arg1 = int(arg1); arg2 = int(arg2)
@@ -44,6 +45,7 @@ def check_for_var(arg, arg1=None):
 def execute(arg):
     global main_edit, current_edit, fun_stack, if_stack
     if not hasattr(execute, 'for_stack'): execute.for_stack = []
+    if not hasattr(execute, 'comment_stack'): execute.comment_stack = []
     if main_edit == False:
         if arg == '+':
             b = check_for_var(stack.pop(), True)
@@ -127,6 +129,12 @@ def execute(arg):
         elif arg in fun_list:
             for fun_cmd in fun_list[arg].split():
                 execute(fun_cmd)
+        elif arg == '//':
+            if main_edit == False:
+                main_edit = True
+                current_edit = 'comment'
+            else:
+                pass
         else:
             try:
                 stack.append(int(arg))
@@ -174,6 +182,8 @@ def execute(arg):
                 if not True_or_False(arg1, arg2, op): break
                 for cmd in new_for_body:
                     execute(cmd)
+        elif arg == '*/' and current_edit == 'comment':
+            execute.comment_stack = []; main_edit = False; current_edit = None
         else:
             if current_edit == 'fun':
                 fun_stack.append(arg)
@@ -181,6 +191,8 @@ def execute(arg):
                 if_stack.append(arg)
             elif current_edit == 'for':
                 execute.for_stack.append(arg)
+            elif current_edit == 'comment':
+                execute.comment_stack.append(arg)
 def process_line(line):
     line = line.strip()
     if line and not line.startswith('//'):
