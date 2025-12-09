@@ -1,24 +1,39 @@
-# Why did I create this? 
-Yes, I already have two DSL (U#, RANDG), but I wanted to make another one after looking at these programming languages. 
-In it, you will have to get out of the habit of the usual print 2+2 to do this: 
-```
-2 2 + print
-```
-Not the best, but it will do, also want to show you if/fun 
-```
-a 10 =
-fun test
-  4 5 * print
-fun_end
-if 4 5 <
-  aa print
-if_end
-test
-```
-And yes, if can sometimes behave strangely, but don't pay attention to that... Oh, I'd also like to show you Hello, world!: 
-```
-Hello,|world! print
+# What is OSHD?
+OSHD is a stack-oriented programming language, with Polish reverse notation. 
+In it, you can check conditions, add functions, and make loops. 
+Overall, I just wanted to do something better than U# and RANDG. 
+And so it really happened. Soon it will be more optimized, or will be rewritten in Rust, Go, or C. 
+But okay, here's what "Hello, world!" would look like in this language: 
 ``` 
-P.S. I wrote this documentation quite late, I will rewrite it later 
-## License 
+Hello,|world! print
+```
+In this language, "|" serve as spaces, just a function that divides code into arguments and cuts them into "". 
+This language stores all variables directly in builtins, so I wouldn't recommend doing anything dangerous, 
+it would break Python itself. 
+Here's also what functions and so on look like in this language: 
+```
+10 aa =
+0 i =
+fun print_aa
+  aa print
+fun_end
+
+print_aa // function call */
+
+if 2 2 ==
+  2|equals|2 print
+if_end
+
+for i 10 <
+  i 1 + i =
+  i print
+for_end
+```
+## Usage:
+
+```
+python3 oshd.py <your oshd file>
+```
+
+##License
 OSHD licensed under MIT License
