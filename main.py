@@ -1,15 +1,12 @@
 import sys
 import time
 import random
-import builtins
 
 stack=[]
 fun_stack=[]
 if_stack=[]
+variables = {}
 comment_stack = []
-safe_list = ['__builtins__', '__name__', 'main_edit', 'current_edit',
-             'str', 'int', 'stack', 'fun_stack', 'if_stack', 'execute',
-             'fun_list', 'check_for_var']
 fun_list={}
 main_edit = False
 current_edit = None
@@ -36,14 +33,10 @@ def True_or_False(arg1, arg2, arg3):
 def print_err(*args, **kwargs): print('', *args, **kwargs)
 
 def check_for_var(arg, arg1=None):
-    answer = getattr(builtins, str(arg), arg)
-    if arg1 is not None:
-        try: return int(answer)
-        except: return answer
-    return answer
+    return variables.get(arg, arg)
 
 def execute(arg):
-    global main_edit, current_edit, fun_stack, if_stack
+    global variables, main_edit, current_edit, fun_stack, if_stack
     if not hasattr(execute, 'for_stack'): execute.for_stack = []
     if not hasattr(execute, 'comment_stack'): execute.comment_stack = []
     if main_edit == False:
@@ -64,13 +57,12 @@ def execute(arg):
             a = check_for_var(stack.pop())
             stack.append(a / b)
         elif arg == '=':
-            name = str(stack.pop())
-            value = check_for_var(stack.pop(), True)
-            if name in safe_list:
-                print(f"Can't edit {name}, because it's interpreter variable.")
-            else:
-                setattr(builtins, name, value)
-                stack.append(value)
+            name = stack.pop()
+            value = stack.pop()
+            try: value = int(value)
+            except: pass
+            variables[name] = value
+            stack.append(check_for_var(value))
         elif arg == 'abs':
             stack.append(abs(check_for_var(stack.pop(), True)))
         elif arg == 'aiter':
@@ -79,8 +71,6 @@ def execute(arg):
             print(check_for_var(stack.pop()))
         elif arg == 'get_inp':
             stack.append(input(stack.pop()))
-        elif arg == 'eval':
-            stack.append(eval(stack.pop()))
         elif arg == 'read':
             file = check_for_var(stack.pop())
             try: 
@@ -100,9 +90,9 @@ def execute(arg):
             list1 = stack.copy()
             stack.clear()
             stack.append(list1)
-        elif arg == 'duplicate':
+        elif arg == 'dup':
             stack.append(stack[-1])
-        elif arg == 'hit':
+        elif arg == 'del':
             stack.pop()
         elif arg == 'time':
             stack.append(time.time())
@@ -110,13 +100,6 @@ def execute(arg):
             time.sleep(check_for_var(stack.pop()))
         elif arg == 'randint':
             stack.append(random.randint(1, 100))
-        elif arg == 'import':
-            try:
-                name = stack.pop()
-                name2 = __import__(name)
-                setattr(builtins, name, name2)
-            except:
-                print('f')
         elif arg == 'fun':
             main_edit = True
             current_edit = 'fun'
@@ -182,6 +165,7 @@ def execute(arg):
                 if not True_or_False(arg1, arg2, op): break
                 for cmd in new_for_body:
                     execute(cmd)
+                stack.pop()
         elif arg == '*/' and current_edit == 'comment':
             execute.comment_stack = []; main_edit = False; current_edit = None
         else:
@@ -202,7 +186,7 @@ def process_line(line):
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
-        print('Usage')
+        print('Usage: python3 oshd.py <.oshd file>')
         sys.exit(1)
     with open(sys.argv[1], 'r') as file:
         for line in file:
