@@ -12,7 +12,6 @@ main_edit = False
 current_edit = None
 
 def True_or_False(arg1, arg2, arg3):
-    print(stack)
     arg1 = check_for_var(arg1); 
     arg2 = check_for_var(arg2)
     try: arg1 = int(arg1); arg2 = int(arg2)
@@ -29,8 +28,6 @@ def True_or_False(arg1, arg2, arg3):
         return arg1 >= arg2
     elif arg3 == '<=':
         return arg1 <= arg2
-
-def print_err(*args, **kwargs): print('', *args, **kwargs)
 
 def check_for_var(arg, arg1=None):
     return variables.get(arg, arg)
@@ -77,7 +74,7 @@ def execute(arg):
                 with open(file, 'r') as f:
                     stack.append(f.read())
             except Exception as e: 
-                print_err(f'Failed to read file {file}: {e}')
+                print(f'Failed to read file {file}: {e}')
         elif arg == 'write':
             file = check_for_var(stack.pop())
             content = check_for_var(stack.pop())
@@ -85,7 +82,7 @@ def execute(arg):
                 with open(file, 'w') as f:
                     f.write(content)
             except:
-                print_err(f'Failed to write content to {file}')
+                print(f'Failed to write content to {file}')
         elif arg == 'list':
             list1 = stack.copy()
             stack.clear()
