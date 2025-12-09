@@ -7,7 +7,7 @@ But okay, here's what "Hello, world!" would look like in this language:
 ``` 
 Hello,|world! print
 ```
-In this language, "|" serve as spaces, just a function that divides code into arguments and cuts them into "". 
+In this language, "|" serve as spaces, just a function that divides code into arguments and cuts them.
 This language stores all variables directly in builtins, so I wouldn't recommend doing anything dangerous, 
 it would break Python itself. 
 Here's also what functions and so on look like in this language: 
