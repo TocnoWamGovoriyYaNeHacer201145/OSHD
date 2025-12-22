@@ -5,7 +5,7 @@ Overall, I just wanted to do something better than U# and RANDG.
 And so it really happened. Soon it will be more optimized, or will be rewritten in Rust, Go, or C. 
 But okay, here's what "Hello, world!" would look like in this language: 
 ``` 
-Hello,|world! print
+" Hello, world! /" print
 ```
 In this language, "|" serve as spaces, just a function that divides code into arguments and cuts them.
 Here's also what functions and so on look like in this language: 
@@ -14,18 +14,18 @@ Here's also what functions and so on look like in this language:
 0 i =
 fun print_aa
   aa print
-fun_end
+end
 
 print_aa // function call */
 
 if 2 2 ==
-  2|equals|2 print
-if_end
+  " 2 equals 2 /" print
+end
 
 for i 10 <
   i 1 + i =
   i print
-for_end
+end
 ```
 ## Usage:
 
