@@ -3,7 +3,13 @@ import time
 import random
 
 stack = []
-variables = {}
+variables = {
+    '__version': '0.0.9-alpha',
+    '__platform': sys.platform,
+    'true': True, 
+    'false': False,
+    'null': None
+}
 fun_list = {}
 current_edit = None
 init_stacks = False
@@ -44,7 +50,7 @@ syntax_expr = {
 }
 
 def True_or_False(arg1, arg2, arg3):
-    try: arg1 = int(*check_for_var(arg1))
+    try: arg1 = int(check_for_var(arg1))
     except: arg1 = check_for_var(arg1)
     try: arg2 = int(check_for_var(arg2))
     except: arg2 = check_for_var(arg2)
@@ -69,7 +75,7 @@ def execute(arg):
             name = stack.pop()
             value = check_for_var(stack.pop())
             try: value = int(value)
-            except: pass
+            except: value = str(value)
             variables[name] = value
             stack.append(variables[name])
         if arg in syntax_op:
@@ -97,39 +103,39 @@ def execute(arg):
                     try: stack.append(check_for_var(arg))
                     except: stack.append(arg)
     else:
-        if arg == 'fun_end' and current_edit == 'fun':
-            new_fun_name = execute.fun_stack[0]
-            execute.fun_stack.remove(new_fun_name)
-            new_fun_body = ' '.join(execute.fun_stack)
-            fun_list[new_fun_name] = new_fun_body
-            execute.fun_stack = []; current_edit = None
-        elif arg == 'if_end' and current_edit == 'if':
-            new_if_body = execute.if_stack[3:]
-            try: arg1 = check_for_var(int(execute.if_stack[0]))
-            except: arg1 = check_for_var(execute.if_stack[0])
-            try: arg2 = check_for_var(int(execute.if_stack[1]))
-            except: arg2 = check_for_var(execute.if_stack[1])
-            op = execute.if_stack[2]
-            condition = True_or_False(arg1, arg2, op)
-            execute.if_stack = []; current_edit = None
-            if condition == True:
-                for cmd in new_if_body:
-                    execute(cmd)
-        elif arg == 'for_end' and current_edit == 'for':
-            new_for_args = execute.for_stack[:3]
-            new_for_body = execute.for_stack[3:]
-            var_name = new_for_args[0]
-            arg1 = check_for_var(new_for_args[0], True)
-            arg2 = check_for_var(new_for_args[1], True)
-            op = new_for_args[2]
-            execute.for_stack = []; current_edit = None
-            while len(stack) > 0: stack.pop()
-            while True:
-                arg1 = check_for_var(var_name, True)
-                if not True_or_False(arg1, arg2, op): break
-                for cmd in new_for_body:
-                    execute(cmd)
-                    print(stack)
+        if arg == 'end':
+            if current_edit == 'fun':
+                new_fun_name = execute.fun_stack[0]
+                execute.fun_stack.remove(new_fun_name)
+                new_fun_body = ' '.join(execute.fun_stack)
+                fun_list[new_fun_name] = new_fun_body
+                execute.fun_stack = []; current_edit = None
+            elif current_edit == 'if':
+                new_if_body = execute.if_stack[3:]
+                try: arg1 = check_for_var(int(execute.if_stack[0]))
+                except: arg1 = check_for_var(execute.if_stack[0])
+                try: arg2 = check_for_var(int(execute.if_stack[1]))
+                except: arg2 = check_for_var(execute.if_stack[1])
+                op = execute.if_stack[2]
+                condition = True_or_False(arg1, arg2, op)
+                execute.if_stack = []; current_edit = None
+                if condition == True:
+                    for cmd in new_if_body:
+                        execute(cmd)
+            elif current_edit == 'for':
+                new_for_args = execute.for_stack[:3]
+                new_for_body = execute.for_stack[3:]
+                var_name = new_for_args[0]
+                arg1 = check_for_var(new_for_args[0], True)
+                arg2 = check_for_var(new_for_args[1], True)
+                op = new_for_args[2]
+                execute.for_stack = []; current_edit = None
+                while len(stack) > 0: stack.pop()
+                while True:
+                    arg1 = check_for_var(var_name, True)
+                    if not True_or_False(arg1, arg2, op): break
+                    for cmd in new_for_body:
+                        execute(cmd)
         elif arg == '/"' and current_edit == 'string':
             final_stack = []
             for obj in execute.string_stack:
