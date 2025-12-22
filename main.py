@@ -105,9 +105,9 @@ def execute(arg):
     else:
         if arg == 'end':
             if current_edit == 'fun':
-                new_fun_name = execute.fun_stack[0]
+                new_fun_name = str(execute.fun_stack[0])
                 execute.fun_stack.remove(new_fun_name)
-                new_fun_body = ' '.join(execute.fun_stack)
+                new_fun_body = ' '.join(str(item) for item in execute.fun_stack)
                 fun_list[new_fun_name] = new_fun_body
                 execute.fun_stack = []; current_edit = None
             elif current_edit == 'if':
