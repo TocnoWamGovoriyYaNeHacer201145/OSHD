@@ -11,6 +11,7 @@ variables = {
     'null': None
 }
 fun_list = {}
+imported_libs = {}
 current_edit = None
 init_stacks = False
 
@@ -40,7 +41,8 @@ syntax_builtins = {
     'for': lambda: globals().__setitem__('current_edit', 'for'),
     '"': lambda: globals().__setitem__('current_edit', 'string'),
     '//': lambda: globals().__setitem__('current_edit', 'comment'),
-    '=': lambda: None
+    '=': lambda: None,
+    'import': lambda: None
 }
 
 syntax_expr = {
@@ -74,6 +76,11 @@ def execute(arg):
         init_stacks = True
     else: pass
     if current_edit == None:
+        if imported_libs != {}:
+            for obj in imported_libs:
+                if arg.startswith(obj):
+                    if hasattr(imported_libs[obj], f'_{check_for_var(arg.removeprefix(f'{obj}.'))}'):
+                        stack = getattr(imported_libs[obj], f'_{check_for_var(arg.removeprefix(f'{obj}.'))}')(stack)
         if arg == '=':
             name = stack.pop()
             value = check_for_var(stack.pop())
@@ -81,6 +88,9 @@ def execute(arg):
             except: value = str(value)
             variables[name] = value
             stack.append(variables[name])
+        elif arg == 'import':
+            arg_ = check_for_var(stack.pop())
+            imported_libs[arg_] = __import__(arg_)
         if arg in syntax_op:
             b = check_for_var(stack.pop())
             a = check_for_var(stack.pop())
