@@ -15,15 +15,14 @@ imported_libs = {}
 current_edit = None
 init_stacks = False
 
-syntax_op = {
+builtins = {
     '+': lambda a, b: a + b,
     '-': lambda a, b: a - b,
     '*': lambda a, b: a * b,
     '/': lambda a, b: a / b if b != 0 else 0,
-    '%': lambda a, b: a % b if b != 0 else 0
-}
-
-syntax_builtins = {
+    '%': lambda a, b: a % b if b != 0 else 0,
+    '=': lambda: None,
+    'import': lambda: imported_libs.__setitem__(stack.pop(), __import__(stack.pop())),
     'abs': lambda: stack.append(abs(check_for_var(stack.pop(), True))),
     'aiter': lambda: stack.append(aiter(stack.pop())),
     'print': lambda: print(check_for_var(stack.pop())),
@@ -41,8 +40,6 @@ syntax_builtins = {
     'for': lambda: globals().__setitem__('current_edit', 'for'),
     '"': lambda: globals().__setitem__('current_edit', 'string'),
     '//': lambda: globals().__setitem__('current_edit', 'comment'),
-    '=': lambda: None,
-    'import': lambda: None
 }
 
 syntax_expr = {
@@ -67,6 +64,7 @@ def check_for_var(arg, arg1=None):
 
 def execute(arg):
     global stack, variables, init_stacks, current_edit
+    will_pass = False
     if init_stacks == False:
         if not hasattr(execute, 'fun_stack'): execute.fun_stack = []
         if not hasattr(execute, 'if_stack'): execute.if_stack = []
@@ -76,11 +74,6 @@ def execute(arg):
         init_stacks = True
     else: pass
     if current_edit == None:
-        if imported_libs != {}:
-            for obj in imported_libs:
-                if arg.startswith(obj):
-                    if hasattr(imported_libs[obj], f'_{check_for_var(arg.removeprefix(f'{obj}.'))}'):
-                        stack = getattr(imported_libs[obj], f'_{check_for_var(arg.removeprefix(f'{obj}.'))}')(stack)
         if arg == '=':
             name = stack.pop()
             value = check_for_var(stack.pop())
@@ -88,15 +81,13 @@ def execute(arg):
             except: value = str(value)
             variables[name] = value
             stack.append(variables[name])
-        elif arg == 'import':
-            arg_ = check_for_var(stack.pop())
-            imported_libs[arg_] = __import__(arg_)
-        if arg in syntax_op:
-            b = check_for_var(stack.pop())
-            a = check_for_var(stack.pop())
-            stack.append(syntax_op[arg](a, b))
-        elif arg in syntax_builtins:
-            syntax_builtins[arg]()
+        elif arg in builtins:
+            if len(arg) > 1:
+                builtins[arg]()
+            else:
+                b = check_for_var(stack.pop())
+                a = check_for_var(stack.pop())
+                stack.append(builtins[arg](a, b))
         elif arg in fun_list:
             for fun_cmd in fun_list[arg].split():
                 execute(fun_cmd)
@@ -109,9 +100,12 @@ def execute(arg):
                     final_parts = []
                     for part in parts:
                         if part == '': continue
-                        val = str(check_for_var(part))
-                        final_parts.append(val)
+                        final_parts.append(str(check_for_var(part)))
                     stack.append(' '.join(final_parts))
+                elif '.' in str(arg):
+                    _arg = arg.split('.')
+                    if hasattr(imported_libs[_arg[0]], f'_{check_for_var(_arg[1])}'):
+                        stack = getattr(imported_libs[_arg[0]], f'_{check_for_var(_arg[1])}')(stack)
                 else:
                     try: stack.append(check_for_var(arg))
                     except: stack.append(arg)
