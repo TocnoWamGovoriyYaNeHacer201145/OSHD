@@ -13,7 +13,6 @@ variables = {
 fun_list = {}
 imported_libs = {}
 current_edit = None
-init_stacks = False
 
 builtins = {
     '+': lambda a, b: a + b,
@@ -22,8 +21,7 @@ builtins = {
     '/': lambda a, b: a / b if b != 0 else 0,
     '%': lambda a, b: a % b if b != 0 else 0,
     '=': lambda: None,
-    'import': lambda: imported_libs.__setitem__(stack.pop(), __import__(stack.pop())),
-    'abs': lambda: stack.append(abs(check_for_var(stack.pop(), True))),
+    'abs': lambda: stack.append(abs(check_for_var(stack.pop()))),
     'aiter': lambda: stack.append(aiter(stack.pop())),
     'print': lambda: print(check_for_var(stack.pop())),
     'get_inp': lambda: stack.append(input(stack.pop())),
@@ -35,6 +33,7 @@ builtins = {
     'pyexec': lambda: exec(stack.pop(), variables),
     'int': lambda: stack.append(int(stack.pop())),
     'str': lambda: stack.append(str(stack.pop())),
+    'import': lambda: imported_libs.__setitem__(stack.pop(), __import__(stack.pop())),
     'fun': lambda: globals().__setitem__('current_edit', 'fun'),
     'if': lambda: globals().__setitem__('current_edit', 'if'),
     'for': lambda: globals().__setitem__('current_edit', 'for'),
@@ -59,20 +58,11 @@ def True_or_False(arg1, arg2, arg3):
     if arg3 in syntax_expr:
         return syntax_expr[arg3](arg1, arg2)
 
-def check_for_var(arg, arg1=None):
+def check_for_var(arg):
     return variables.get(arg, arg)
 
 def execute(arg):
-    global stack, variables, init_stacks, current_edit
-    will_pass = False
-    if init_stacks == False:
-        if not hasattr(execute, 'fun_stack'): execute.fun_stack = []
-        if not hasattr(execute, 'if_stack'): execute.if_stack = []
-        if not hasattr(execute, 'for_stack'): execute.for_stack = []
-        if not hasattr(execute, 'string_stack'): execute.string_stack = []
-        if not hasattr(execute, 'comment_stack'): execute.comment_stack = []
-        init_stacks = True
-    else: pass
+    global stack, variables, current_edit
     if current_edit == None:
         if arg == '=':
             name = stack.pop()
@@ -133,14 +123,14 @@ def execute(arg):
                 new_for_args = execute.for_stack[:3]
                 new_for_body = execute.for_stack[3:]
                 var_name = new_for_args[0]
-                arg1 = check_for_var(new_for_args[0], True)
-                arg2 = check_for_var(new_for_args[1], True)
+                arg1 = check_for_var(new_for_args[0])
+                arg2 = check_for_var(new_for_args[1])
                 op = new_for_args[2]
                 execute.for_stack = []; current_edit = None
                 while len(stack) > 0: stack.pop()
                 while True:
-                    arg1 = check_for_var(var_name, True)
-                    if not True_or_False(arg1, arg2, op): break
+                    arg1 = check_for_var(var_name)
+                    if True_or_False(arg1, arg2, op) == False: break
                     for cmd in new_for_body:
                         execute(cmd)
         elif arg == '/"' and current_edit == 'string':
@@ -161,15 +151,18 @@ def execute(arg):
                 execute.for_stack.append(check_for_var(arg))
             elif current_edit == 'string':
                 execute.string_stack.append(check_for_var(arg))
-            elif current_edit == 'comment':
-                execute.comment_stack.append(arg)
+
+execute.fun_stack = []
+execute.if_stack = []
+execute.for_stack = []
+execute.string_stack = []
+execute.comment_stack = []
 
 def process_line(line):
     line = line.strip()
-    if line and not line.startswith('//'):
-        commands = line.split()
-        for cmd in commands:
-            execute(cmd)
+    commands = line.split()
+    for cmd in commands:
+        execute(cmd)
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
@@ -177,4 +170,5 @@ if __name__ == '__main__':
         sys.exit(1)
     with open(sys.argv[1], 'r') as file:
         for line in file:
-            process_line(line)
+            if not line.startswith('//'):
+                process_line(line)
